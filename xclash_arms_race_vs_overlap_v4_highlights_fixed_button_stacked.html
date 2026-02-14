@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>X-Clash Arms Race • Weekly Rotation (UK Time)</title>
+<style>
+  :root{
+    /* Inspired by in-game UI */
+    --bgTop:#77B7E6;
+    --bgMid:#4C86D6;
+    --bgDeep:#1B2B5C;
+
+    --gold1:#FFE6A6;
+    --gold2:#F6C65B;
+    --gold3:#D89B2E;
+
+    --text:#F6FBFF;
+
+    --hero:#8A57FF;
+    --city:#FFB23A;
+    --sold:#27D49A;
+    --tech:#4BA9FF;
+    --beast:#FF5B5B;
+
+    --shadow: 0 18px 40px rgba(0,0,0,.35);
+    --soft: 0 8px 18px rgba(0,0,0,.22);
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    color:var(--text);
+    overflow-x:hidden;
+    background:
+      radial-gradient(1200px 900px at 20% 20%, rgba(255,255,255,.35), transparent 60%),
+      radial-gradient(900px 700px at 75% 25%, rgba(255,214,102,.25), transparent 55%),
+      radial-gradient(800px 600px at 40% 95%, rgba(138,87,255,.18), transparent 55%),
+      linear-gradient(180deg, var(--bgTop), var(--bgMid) 45%, var(--bgDeep) 100%);
+  }
+
+  .hills{
+    position:fixed; inset:auto 0 0 0;
+    height:38vh; pointer-events:none; z-index:0;
+    background:
+      radial-gradient(55vw 28vh at 12% 75%, rgba(20,55,120,.55) 0 60%, transparent 61%),
+      radial-gradient(60vw 30vh at 55% 80%, rgba(15,45,105,.62) 0 62%, transparent 63%),
+      radial-gradient(65vw 32vh at 92% 85%, rgba(10,35,88,.70) 0 64%, transparent 65%);
+  }
+  .mist{
+    position:fixed; inset:auto 0 0 0;
+    height:55vh; pointer-events:none; z-index:0;
+    background: linear-gradient(180deg, transparent, rgba(255,255,255,.14) 35%, rgba(255,255,255,.08));
+    mix-blend-mode: screen;
+  }
+
+  .wrap{
+    position:relative; z-index:1;
+    width:min(1280px, 96vw);
+    margin: 0 auto;
+    padding: clamp(14px, 3.5vw, 34px);
+    padding-top: calc(clamp(14px, 3.5vw, 34px) + env(safe-area-inset-top));
+    padding-bottom: calc(clamp(18px, 4vw, 38px) + env(safe-area-inset-bottom));
+  }
+
+  .topbar{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom: clamp(14px, 3vw, 26px);
+  }
+  .titleBlock h1{
+    margin:0;
+    font-size: clamp(30px, 4.2vw, 54px);
+    font-weight: 1000;
+    letter-spacing: .02em;
+    text-shadow: 0 3px 0 rgba(0,0,0,.25), 0 10px 30px rgba(0,0,0,.35);
+  }
+  .titleBlock .sub{
+    margin-top: 6px;
+    font-weight: 800;
+    color: rgba(255,255,255,.88);
+    font-size: clamp(13px, 1.4vw, 18px);
+    text-shadow: 0 2px 12px rgba(0,0,0,.25);
+  }
+
+  .badge{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding: 10px 12px;
+    border-radius: 16px;
+    color: rgba(255,255,255,.92);
+    font-weight: 900;
+    font-size: clamp(12px, 1.2vw, 14px);
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, rgba(255,255,255,.22), rgba(255,255,255,.10));
+    border: 1px solid rgba(255,255,255,.28);
+    box-shadow: var(--soft), inset 0 1px 0 rgba(255,255,255,.25);
+    backdrop-filter: blur(10px);
+    white-space:nowrap;
+  }
+  .badge svg{width:18px;height:18px;opacity:.95;filter: drop-shadow(0 4px 8px rgba(0,0,0,.25));}
+
+  .panel{
+    border-radius: 26px;
+    padding: clamp(12px, 2.2vw, 20px);
+    background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,.08));
+    border: 1px solid rgba(255,255,255,.22);
+    box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.25);
+    backdrop-filter: blur(10px);
+  }
+
+  .goldFrame{
+    position:relative;
+    border-radius: 24px;
+    padding: clamp(10px, 2vw, 16px);
+    background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,.06));
+    border: 1px solid rgba(255,255,255,.18);
+  }
+  .goldFrame:before{
+    content:"";
+    position:absolute;
+    inset:-2px;
+    border-radius: 26px;
+    background: linear-gradient(135deg, rgba(255,230,166,.85), rgba(246,198,91,.65), rgba(216,155,46,.75));
+    z-index:-1;
+    filter: drop-shadow(0 18px 35px rgba(0,0,0,.28));
+  }
+
+  /* KEY */
+  .key{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: clamp(10px, 1.4vw, 14px);
+    margin-bottom: clamp(12px, 2.5vw, 18px);
+  }
+  .keyItem{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    border-radius: 18px;
+    padding: 12px 12px;
+    background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.07));
+    border: 1px solid rgba(255,255,255,.20);
+    box-shadow: var(--soft), inset 0 1px 0 rgba(255,255,255,.22);
+  }
+  .keyIcon{
+    width:52px;height:52px;border-radius:16px;
+    display:grid;place-items:center;
+    border: 1px solid rgba(255,255,255,.22);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 10px 18px rgba(0,0,0,.18);
+    position:relative;
+    overflow:hidden;
+    flex: 0 0 auto;
+  }
+  .keyIcon:after{
+    content:"";
+    position:absolute; inset:-30px -30px auto auto;
+    width: 90px; height: 90px;
+    background: rgba(255,255,255,.18);
+    transform: rotate(22deg);
+    border-radius: 26px;
+  }
+  .keyIcon svg{
+    width:28px;height:28px;position:relative;z-index:1;
+    display:block;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,.22));
+  }
+  .keyText .name{
+    font-weight: 1000;
+    font-size: 16px;
+    letter-spacing:.01em;
+  }
+
+  /* GRID */
+  .gridWrap{
+    background: linear-gradient(180deg, rgba(95,167,227,.28), rgba(46,111,182,.18));
+    border: 1px solid rgba(255,255,255,.22);
+    border-radius: 22px;
+    padding: clamp(10px, 1.8vw, 14px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.22);
+    overflow:hidden;
+  }
+
+  .grid{
+    display:grid;
+    grid-template-columns: 92px repeat(6, minmax(92px, 1fr));
+    gap: clamp(8px, 1.2vw, 14px);
+    align-items:stretch;
+  }
+
+  .time, .day{
+    border-radius: 16px;
+    background: rgba(255,255,255,.10);
+    border: 1px solid rgba(255,255,255,.18);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.18);
+    display:grid;
+    place-items:center;
+    font-weight: 1000;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    padding: 10px 8px;
+  }
+  .time{font-size: 13px;color: rgba(255,255,255,.86);}
+  .day{font-size: 14px;color: rgba(255,255,255,.92);}
+
+  .slot{
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,.22);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 14px 22px rgba(0,0,0,.18);
+    position:relative;
+    overflow:hidden;
+    aspect-ratio: 1 / 1;
+    display:grid;
+    place-items:center;
+    padding: 10px;
+  }
+  .slot:before{
+    content:"";
+    position:absolute;
+    inset:-40px -60px auto auto;
+    width: 140px;
+    height: 140px;
+    background: rgba(255,255,255,.22);
+    transform: rotate(25deg);
+    border-radius: 38px;
+  }
+  .slot:after{
+    content:"";
+    position:absolute;
+    inset: 0;
+    background: radial-gradient(120px 120px at 30% 25%, rgba(255,255,255,.20), transparent 60%);
+    mix-blend-mode: screen;
+    opacity:.9;
+  }
+
+  .tile{
+    position:relative;
+    z-index:1;
+    width: 100%;
+    height: 100%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap: 8px;
+    text-align:center;
+  }
+
+  /* Icon alignment: consistent viewBox + optical sizing */
+  .tile svg{
+    width: 38px;
+    height: 38px;
+    display:block;
+    filter: drop-shadow(0 10px 14px rgba(0,0,0,.25));
+  }
+
+  .label{
+    font-weight: 1000;
+    letter-spacing: .02em;
+    font-size: clamp(11px, 1.05vw, 14px);
+    line-height: 1.1;
+    text-shadow: 0 2px 10px rgba(0,0,0,.25);
+    padding: 0 6px;
+  }
+
+  /* Theme tiles */
+  .hero{background: linear-gradient(180deg, rgba(138,87,255,.98), rgba(94,55,210,.92));}
+  .city{background: linear-gradient(180deg, rgba(255,178,58,.98), rgba(217,126,0,.92));}
+  .sold{background: linear-gradient(180deg, rgba(39,212,154,.98), rgba(0,150,103,.92));}
+  .tech{background: linear-gradient(180deg, rgba(75,169,255,.98), rgba(35,96,206,.92));}
+  .beast{background: linear-gradient(180deg, rgba(255,91,91,.98), rgba(201,43,43,.92));}
+
+  /* Responsive */
+  @media (max-width: 760px){
+    .grid{grid-template-columns: 64px repeat(6, minmax(60px, 1fr));}
+    .tile svg{width:30px;height:30px}
+  }
+  @media (max-width: 520px){
+    .grid{grid-template-columns: 56px repeat(6, minmax(48px, 1fr));}
+    .time{font-size:12px}
+    .day{font-size:12.5px}
+  }
+  /* VS overlap highlight (tiles that match today's VS focus) */
+  .boost{
+    outline: 3px solid rgba(255,255,255,.92);
+    outline-offset: -3px;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.24),
+      0 14px 22px rgba(0,0,0,.18),
+      0 0 0 6px rgba(255,230,166,.22),
+      0 0 28px rgba(255,230,166,.34);
+  }
+  .vsTag{
+    position:absolute;
+    top:10px; left:10px;
+    z-index:2;
+    padding: 6px 9px;
+    border-radius: 999px;
+    font-weight: 1000;
+    font-size: 11px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    background: linear-gradient(180deg, rgba(255,230,166,.95), rgba(246,198,91,.95));
+    color: rgba(11,20,48,.92);
+    border: 1px solid rgba(255,255,255,.55);
+    box-shadow: 0 10px 18px rgba(0,0,0,.22);
+  }
+
+  /* Day header layout + VS button */
+  .dayInner{
+    width:100%;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    align-items:center;
+    justify-content:center;
+  }
+  .dayRow{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    justify-content:center;
+    flex-wrap:wrap;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .daySmall{
+    font-size: 11px;
+    font-weight: 900;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,.80);
+  }
+  .vsBtn{
+    border:0;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    padding: 6px 9px;
+    border-radius: 999px;
+    font-weight: 1000;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    font-size: 11px;
+    color: rgba(11,20,48,.92);
+    background: linear-gradient(180deg, rgba(255,230,166,.95), rgba(246,198,91,.95));
+    border: 1px solid rgba(255,255,255,.55);
+    box-shadow: 0 10px 18px rgba(0,0,0,.18);
+  
+    max-width: 100%;
+    justify-content: center;
+  }
+  .vsBtn svg{ width:14px;height:14px;display:block; }
+  .vsBtn:active{transform: translateY(1px);}
+
+  /* Modal */
+  .modal{
+    position:fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding: clamp(14px, 3vw, 26px);
+    z-index: 50;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(6px);
+  }
+  .modal.open{display:flex;}
+  .modalCard{
+    width:min(880px, 96vw);
+    max-height: min(86vh, 860px);
+    overflow:auto;
+    border-radius: 22px;
+    background: linear-gradient(180deg, rgba(255,255,255,.16), rgba(255,255,255,.08));
+    border: 1px solid rgba(255,255,255,.22);
+    box-shadow: 0 24px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.25);
+  }
+  .modalTop{
+    position:sticky; top:0;
+    background: linear-gradient(180deg, rgba(70,140,210,.70), rgba(70,140,210,.35));
+    border-bottom: 1px solid rgba(255,255,255,.18);
+    padding: 12px 14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    backdrop-filter: blur(10px);
+  }
+  .modalTitle{
+    font-weight: 1100;
+    letter-spacing:.02em;
+    font-size: 18px;
+  }
+  .closeBtn{
+    border:0;
+    cursor:pointer;
+    border-radius: 14px;
+    padding: 8px 10px;
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.22);
+    color: rgba(255,255,255,.92);
+    font-weight: 1000;
+  }
+  .modalBody{
+    padding: 14px;
+    display:grid;
+    gap: 12px;
+  }
+  .vsPills{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+  }
+  .pill{
+    padding: 8px 10px;
+    border-radius: 999px;
+    font-weight: 900;
+    letter-spacing:.06em;
+    text-transform: uppercase;
+    font-size: 12px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.18);
+  }
+  .list{ margin: 0; padding-left: 18px; color: rgba(255,255,255,.92); }
+  .list li{ margin: 6px 0; line-height: 1.25; }
+
+</style>
+</head>
+<body>
+<div class="hills"></div>
+<div class="mist"></div>
+
+<!-- Icon defs (inline functions are repeated below; keeping simple/standalone) -->
+
+<div class="wrap">
+  <div class="topbar">
+    <div class="titleBlock">
+      <h1>⚔ Arms Race Rotation</h1>
+      <div class="sub">UK Time • Timeslots: 02:00 / 06:00 / 10:00 / 14:00 / 18:00 / 22:00</div>
+      <div class="sub" style="opacity:.92;">White outline + “VS” tag = overlap window (do that task then for double points)</div>
+    </div>
+
+    <div class="badge" title="UK time reminder">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 2c4.4 0 8 3.6 8 8 0 3.2-1.9 6-4.7 7.3L12 22l-3.3-4.7C5.9 16 4 13.2 4 10c0-4.4 3.6-8 8-8z" fill="rgba(255,255,255,.92)"/>
+        <path d="M12 6v5l3.2 1.8" stroke="rgba(11,20,48,.55)" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+      UK TIME
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="goldFrame">
+
+      <!-- KEY (titles only) -->
+      <div class="key">
+        <div class="keyItem">
+          <div class="keyIcon hero">
+            <!-- Hero: sword + sparkle -->
+            <svg viewBox="0 0 24 24">
+              <path d="M14.5 3l6.5 6.5-2 2-1.6-1.6-7.9 7.9-2.8.6.6-2.8 7.9-7.9L12.5 5l2-2z" fill="white"/>
+              <path d="M6 5l.8 2.1L9 8l-2.2.9L6 11l-.8-2.1L3 8l2.2-.9L6 5z" fill="white" opacity=".95"/>
+            </svg>
+          </div>
+          <div class="keyText"><div class="name">Enhance Hero</div></div>
+        </div>
+
+        <div class="keyItem">
+          <div class="keyIcon city">
+            <!-- Construction: crane + building -->
+            <svg viewBox="0 0 24 24">
+              <path d="M4 21h6V7H4v14zM12 21h8v-9h-8v9z" fill="white" opacity=".95"/>
+              <path d="M10 4h2v3h6l2 2v2h-2V10l-1-1h-7V4z" fill="white"/>
+              <path d="M16 10l-4 2v-2l4-2v2z" fill="white" opacity=".9"/>
+            </svg>
+          </div>
+          <div class="keyText"><div class="name">City Construction</div></div>
+        </div>
+
+        <div class="keyItem">
+          <div class="keyIcon sold">
+            <svg viewBox="0 0 24 24">
+              <path d="M12 3c4 0 7 2.2 8 5.6-3 1.9-6 2.9-8 2.9S7 10.5 4 8.6C5 5.2 8 3 12 3z" fill="white"/>
+              <path d="M5 10.5V14c0 4.7 3.2 7 7 7s7-2.3 7-7v-3.5c-2.5 1.4-5.4 2.1-7 2.1s-4.5-.7-7-2.1z" fill="white"/>
+            </svg>
+          </div>
+          <div class="keyText"><div class="name">Soldier Training</div></div>
+        </div>
+
+        <div class="keyItem">
+          <div class="keyIcon tech">
+            <svg viewBox="0 0 24 24">
+              <path d="M19.4 13a7.8 7.8 0 0 0 .1-2l2-1.2-2-3.4-2.3.7a7.9 7.9 0 0 0-1.7-1l-.3-2.4H10.8l-.3 2.4a7.9 7.9 0 0 0-1.7 1l-2.3-.7-2 3.4 2 1.2a7.8 7.8 0 0 0 .1 2l-2 1.2 2 3.4 2.3-.7c.5.4 1.1.7 1.7 1l.3 2.4h4.4l.3-2.4c.6-.3 1.2-.6 1.7-1l2.3.7 2-3.4-2-1.2z" fill="white"/>
+              <path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5z" fill="rgba(0,0,0,.18)"/>
+            </svg>
+          </div>
+          <div class="keyText"><div class="name">Technology</div></div>
+        </div>
+
+        <div class="keyItem">
+          <div class="keyIcon beast">
+            <!-- Beast: paw print -->
+            <svg viewBox="0 0 24 24">
+              <circle cx="7.2" cy="9" r="2" fill="white"/>
+              <circle cx="12" cy="7.6" r="2.1" fill="white"/>
+              <circle cx="16.8" cy="9" r="2" fill="white"/>
+              <circle cx="19" cy="12.6" r="1.8" fill="white"/>
+              <path d="M12 12.2c-3.2 0-6.2 2-6.2 5 0 2 1.7 3.8 6.2 3.8s6.2-1.8 6.2-3.8c0-3-3-5-6.2-5z" fill="white"/>
+            </svg>
+          </div>
+          <div class="keyText"><div class="name">Mystic Beast</div></div>
+        </div>
+      </div>
+
+      <!-- GRID -->
+      <div class="gridWrap">
+        <div class="grid">
+          <div></div>
+          <div class="time">02:00</div><div class="time">06:00</div><div class="time">10:00</div><div class="time">14:00</div><div class="time">18:00</div><div class="time">22:00</div>
+
+          <!-- Helper snippets -->
+          <!-- HERO ICON -->
+          <!-- (repeat inline for simplicity / copy-paste safe) -->
+
+          <!-- WED -->
+          <div class="day"><div class="dayInner"><div class="dayRow"><span>Sun</span><button class="vsBtn" type="button" data-day="Sun" aria-label="Open VS details for Sun"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12v10H6z" fill="rgba(11,20,48,.25)"/><path d="M6 7h12v10H6z" fill="white" opacity=".9"/><path d="M8 9h8M8 12h7M8 15h6" stroke="rgba(11,20,48,.55)" stroke-width="2" stroke-linecap="round"/></svg>VS</button></div><div class="daySmall">Rest day</div></div></div>
+          <div class="slot beast"><div class="tile"><svg viewBox="0 0 24 24"><circle cx="7.2" cy="9" r="2" fill="white"/><circle cx="12" cy="7.6" r="2.1" fill="white"/><circle cx="16.8" cy="9" r="2" fill="white"/><circle cx="19" cy="12.6" r="1.8" fill="white"/><path d="M12 12.2c-3.2 0-6.2 2-6.2 5 0 2 1.7 3.8 6.2 3.8s6.2-1.8 6.2-3.8c0-3-3-5-6.2-5z" fill="white"/></svg><div class="label">Mystic<br>Beast</div></div></div>
+          <div class="slot hero"><div class="tile"><svg viewBox="0 0 24 24"><path d="M14.5 3l6.5 6.5-2 2-1.6-1.6-7.9 7.9-2.8.6.6-2.8 7.9-7.9L12.5 5l2-2z" fill="white"/><path d="M6 5l.8 2.1L9 8l-2.2.9L6 11l-.8-2.1L3 8l2.2-.9L6 5z" fill="white" opacity=".95"/></svg><div class="label">Enhance<br>Hero</div></div></div>
+          <div class="slot city"><div class="tile"><svg viewBox="0 0 24 24"><path d="M4 21h6V7H4v14zM12 21h8v-9h-8v9z" fill="white" opacity=".95"/><path d="M10 4h2v3h6l2 2v2h-2V10l-1-1h-7V4z" fill="white"/><path d="M16 10l-4 2v-2l4-2v2z" fill="white" opacity=".9"/></svg><div class="label">City<br>Construction</div></div></div>
+          <div class="slot sold"><div class="tile"><svg viewBox="0 0 24 24"><path d="M12 3c4 0 7 2.2 8 5.6-3 1.9-6 2.9-8 2.9S7 10.5 4 8.6C5 5.2 8 3 12 3z" fill="white"/><path d="M5 10.5V14c0 4.7 3.2 7 7 7s7-2.3 7-7v-3.5c-2.5 1.4-5.4 2.1-7 2.1s-4.5-.7-7-2.1z" fill="white"/></svg><div class="label">Soldier<br>Training</div></div></div>
+          <div class="slot tech"><div class="tile"><svg viewBox="0 0 24 24"><path d="M19.4 13a7.8 7.8 0 0 0 .1-2l2-1.2-2-3.4-2.3.7a7.9 7.9 0 0 0-1.7-1l-.3-2.4H10.8l-.3 2.4a7.9 7.9 0 0 0-1.7 1l-2.3-.7-2 3.4 2 1.2a7.8 7.8 0 0 0 .1 2l-2 1.2 2 3.4 2.3-.7c.5.4 1.1.7 1.7 1l.3 2.4h4.4l.3-2.4c.6-.3 1.2-.6 1.7-1l2.3.7 2-3.4-2-1.2z" fill="white"/><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5z" fill="rgba(0,0,0,.18)"/></svg><div class="label">Technology</div></div></div>
+          <div class="slot beast"><div class="tile"><svg viewBox="0 0 24 24"><circle cx="7.2" cy="9" r="2" fill="white"/><circle cx="12" cy="7.6" r="2.1" fill="white"/><circle cx="16.8" cy="9" r="2" fill="white"/><circle cx="19" cy="12.6" r="1.8" fill="white"/><path d="M12 12.2c-3.2 0-6.2 2-6.2 5 0 2 1.7 3.8 6.2 3.8s6.2-1.8 6.2-3.8c0-3-3-5-6.2-5z" fill="white"/></svg><div class="label">Mystic<br>Beast</div></div></div>
+
+          <!-- MON -->
+          <div class="day"><div class="dayInner"><div class="dayRow"><span>Mon</span><button class="vsBtn" type="button" data-day="Mon" aria-label="Open VS details for Mon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12v10H6z" fill="rgba(11,20,48,.25)"/><path d="M6 7h12v10H6z" fill="white" opacity=".9"/><path d="M8 9h8M8 12h7M8 15h6" stroke="rgba(11,20,48,.55)" stroke-width="2" stroke-linecap="round"/></svg>VS</button></div><div class="daySmall">Hero + Beast</div></div></div>
+          <div class="slot hero boost"><span class="vsTag">VS</span><div class="tile"><svg viewBox="0 0 24 24"><path d="M14.5 3l6.5 6.5-2 2-1.6-1.6-7.9 7.9-2.8.6.6-2.8 7.9-7.9L12.5 5l2-2z" fill="white"/><path d="M6 5l.8 2.1L9 8l-2.2.9L6 11l-.8-2.1L3 8l2.2-.9L6 5z" fill="white" opacity=".95"/></svg><div class="label">Enhance<br>Hero</div></div></div>
+          <div class="slot city"><div class="tile"><svg viewBox="0 0 24 24"><path d="M4 21h6V7H4v14zM12 21h8v-9h-8v9z" fill="white" opacity=".95"/><path d="M10 4h2v3h6l2 2v2h-2V10l-1-1h-7V4z" fill="white"/><path d="M16 10l-4 2v-2l4-2v2z" fill="white" opacity=".9"/></svg><div class="label">City<br>Construction</div></div></div>
+          <div class="slot sold"><div class="tile"><svg viewBox="0 0 24 24"><path d="M12 3c4 0 7 2.2 8 5.6-3 1.9-6 2.9-8 2.9S7 10.5 4 8.6C5 5.2 8 3 12 3z" fill="white"/><path d="M5 10.5V14c0 4.7 3.2 7 7 7s7-2.3 7-7v-3.5c-2.5 1.4-5.4 2.1-7 2.1s-4.5-.7-7-2.1z" fill="white"/></svg><div class="label">Soldier<br>Training</div></div></div>
+          <div class="slot tech"><div class="tile"><svg viewBox="0 0 24 24"><path d="M19.4 13a7.8 7.8 0 0 0 .1-2l2-1.2-2-3.4-2.3.7a7.9 7.9 0 0 0-1.7-1l-.3-2.4H10.8l-.3 2.4a7.9 7.9 0 0 0-1.7 1l-2.3-.7-2 3.4 2 1.2a7.8 7.8 0 0 0 .1 2l-2 1.2 2 3.4 2.3-.7c.5.4 1.1.7 1.7 1l.3 2.4h4.4l.3-2.4c.6-.3 1.2-.6 1.7-1l2.3.7 2-3.4-2-1.2z" fill="white"/><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5z" fill="rgba(0,0,0,.18)"/></svg><div class="label">Technology</div></div></div>
+          <div class="slot beast boost"><span class="vsTag">VS</span><div class="tile"><svg viewBox="0 0 24 24"><circle cx="7.2" cy="9" r="2" fill="white"/><circle cx="12" cy="7.6" r="2.1" fill="white"/><circle cx="16.8" cy="9" r="2" fill="white"/><circle cx="19" cy="12.6" r="1.8" fill="white"/><path d="M12 12.2c-3.2 0-6.2 2-6.2 5 0 2 1.7 3.8 6.2 3.8s6.2-1.8 6.2-3.8c0-3-3-5-6.2-5z" fill="white"/></svg><div class="label">Mystic<br>Beast</div></div></div>
+          <div class="slot hero boost"><span class="vsTag">VS</span><div class="tile"><svg viewBox="0 0 24 24"><path d="M14.5 3l6.5 6.5-2 2-1.6-1.6-7.9 7.9-2.8.6.6-2.8 7.9-7.9L12.5 5l2-2z" fill="white"/><path d="M6 5l.8 2.1L9 8l-2.2.9L6 11l-.8-2.1L3 8l2.2-.9L6 5z" fill="white" opacity=".95"/></svg><div class="label">Enhance<br>Hero</div></div></div>
+
+          <!-- TUE -->
+          <div class="day"><div class="dayInner"><div class="dayRow"><span>Tue</span><button class="vsBtn" type="button" data-day="Tue" aria-label="Open VS details for Tue"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12v10H6z" fill="rgba(11,20,48,.25)"/><path d="M6 7h12v10H6z" fill="white" opacity=".9"/><path d="M8 9h8M8 12h7M8 15h6" stroke="rgba(11,20,48,.55)" stroke-width="2" stroke-linecap="round"/></svg>VS</button></div><div class="daySmall">Construction</div></div></div>
+          <div class="slot city boost"><span class="vsTag">VS</span><div class="tile"><svg viewBox="0 0 24 24"><path d="M4 21h6V7H4v14zM12 21h8v-9h-8v9z" fill="white" opacity=".95"/><path d="M10 4h2v3h6l2 2v2h-2V10l-1-1h-7V4z" fill="white"/><path d="M16 10l-4 2v-2l4-2v2z" fill="white" opacity=".9"/></svg><div class="label">City<br>Construction</div></div></div>
+          <div class="slot sold"><div class="tile"><svg viewBox="0 0 24 24"><path d="M12 3c4 0 7 2.2 8 5.6-3 1.9-6 2.9-8 2.9S7 10.5 4 8.6C5 5.2 8 3 12 3z" fill="white"/><path d="M5 10.5V14c0 4.7 3.2 7 7 7s7-2.3 7-7v-3.5c-2.5 1.4-5.4 2.1-7 2.1s-4.5-.7-7-2.1z" fill="white"/></svg><div class="label">Soldier<br>Training</div></div></div>
+          <div class="slot tech"><div class="tile"><svg viewBox="0 0 24 24"><path d="M19.4 13a7.8 7.8 0 0 0 .1-2l2-1.2-2-3.4-2.3.7a7.9 7.9 0 0 0-1.7-1l-.3-2.4H10.8l-.3 2.4a7.9 7.9 0 0 0-1.7 1l-2.3-.7-2 3.4 2 1.2a7.8 7.8 0 0 0 .1 2l-2 1.2 2 3.4 2.3-.7c.5.4 1.1.7 1.7 1l.3 2.4h4.4l.3-2.4c.6-.3 1.2-.6 1.7-1l2.3.7 2-3.4-2-1.2z" fill="white"/><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5z" fill="rgba(0,0,0,.18)"/></svg><div class="label">Technology</div></div></div>
+          <div class="slot beast"><div class="tile"><svg viewBox="0 0 24 24"><circle cx="7.2" cy="9" r="2" fill="white"/><circle cx="12" cy="7.6" r="2.1" fill="white"/><circle cx="16.8" cy="9" r="2" fill="white"/><circle cx="19" cy="12.6" r="1.8" fill="white"/><path d="M12 12.2c-3.2 0-6.2 2-6.2 5 0 2 1.7 3.8 6.2 3.8s6.2-1.8 6.2-3.8c0-3-3-5-6.2-5z" fill="white"/></svg><div class="label">Mystic<br>Beast</div></div></div>
+          <div class="slot hero"><div class="tile"><svg viewBox="0 0 24 24"><path d="M14.5 3l6.5 6.5-2 2-1.6-1.6-7.9 7.9-2.8.6.6-2.8 7.9-7.9L12.5 5l2-2z" fill="white"/><path d="M6 5l.8 2.1L9 8l-2.2.9L6 11l-.8-2.1L3 8l2.2-.9L6 5z" fill="white" opacity=".95"/></svg><div class="label">Enhance<br>Hero</div></div></div>
+          <div class="slot city boost"><span class="vsTag">VS</span><div class="tile"><svg viewBox="0 0 24 24"><path d="M4 21h6V7H4v14zM12 21h8v-9h-8v9z" fill="white" opacity=".95"/><path d="M10 4h2v3h6l2 2v2h-2V10l-1-1h-7V4z" fill="white"/><path d="M16 10l-4 2v-2l4-2v2z" fill="white" opacity=".9"/></svg><div class="label">City<br>Construction</div></div></div>
+<div class="day"><div class="dayInner"><div class="dayRow"><span>Wed</span><button class="vsBtn" type="button" data-day="Wed" aria-label="Open VS details for Wed"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12v10H6z" fill="rgba(11,20,48,.25)"/><path d="M6 7h12v10H6z" fill="white" opacity=".9"/><path d="M8 9h8M8 12h7M8 15h6" stroke="rgba(11,20,48,.55)" stroke-width="2" stroke-linecap="round"/></svg>VS</button></div><div class="daySmall">Technology</div></div></div>
+          <div class="slot hero"><div class="tile">
+            <svg viewBox="0 0 24 24"><path d="M14.5 3l6.5 6.5-2 2-1.6-1.6-7.9 7.9-2.8.6.6-2.8 7.9-7.9L12.5 5l2-2z" fill="white"/><path d="M6 5l.8 2.1L9 8l-2.2.9L6 11l-.8-2.1L3 8l2.2-.9L6 5z" fill="white" opacity=".95"/></svg>
+            <div class="label">Enhance<br>Hero</div></div></div>
+
+          <div class="slot city"><div class="tile">
+            <svg viewBox="0 0 24 24"><path d="M4 21h6V7H4v14zM12 21h8v-9h-8v9z" fill="white" opacity=".95"/><path d="M10 4h2v3h6l2 2v2h-2V10l-1-1h-7V4z" fill="white"/><path d="M16 10l-4 2v-2l4-2v2z" fill="white" opacity=".9"/></svg>
+            <div class="label">City<br>Construction</div></div></div>
+
+          <div class="slot sold"><div class="tile">
+            <svg viewBox="0 0 24 24"><path d="M12 3c4 0 7 2.2 8 5.6-3 1.9-6 2.9-8 2.9S7 10.5 4 8.6C5 5.2 8 3 12 3z" fill="white"/><path d="M5 10.5V14c0 4.7 3.2 7 7 7s7-2.3 7-7v-3.5c-2.5 1.4-5.4 2.1-7 2.1s-4.5-.7-7-2.1z" fill="white"/></svg>
+            <div class="label">Soldier<br>Training</div></div></div>
+
+          <div class="slot tech boost"><span class="vsTag">VS</span><div class="tile">
+            <svg viewBox="0 0 24 24"><path d="M19.4 13a7.8 7.8 0 0 0 .1-2l2-1.2-2-3.4-2.3.7a7.9 7.9 0 0 0-1.7-1l-.3-2.4H10.8l-.3 2.4a7.9 7.9 0 0 0-1.7 1l-2.3-.7-2 3.4 2 1.2a7.8 7.8 0 0 0 .1 2l-2 1.2 2 3.4 2.3-.7c.5.4 1.1.7 1.7 1l.3 2.4h4.4l.3-2.4c.6-.3 1.2-.6 1.7-1l2.3.7 2-3.4-2-1.2z" fill="white"/><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5z" fill="rgba(0,0,0,.18)"/></svg>
+            <div class="label">Technology</div></div></div>
+
+          <div class="slot beast"><div class="tile">
+            <svg viewBox="0 0 24 24"><circle cx="7.2" cy="9" r="2" fill="white"/><circle cx="12" cy="7.6" r="2.1" fill="white"/><circle cx="16.8" cy="9" r="2" fill="white"/><circle cx="19" cy="12.6" r="1.8" fill="white"/><path d="M12 12.2c-3.2 0-6.2 2-6.2 5 0 2 1.7 3.8 6.2 3.8s6.2-1.8 6.2-3.8c0-3-3-5-6.2-5z" fill="white"/></svg>
+            <div class="label">Mystic<br>Beast</div></div></div>
+
+          <div class="slot hero"><div class="tile">
+            <svg viewBox="0 0 24 24"><path d="M14.5 3l6.5 6.5-2 2-1.6-1.6-7.9 7.9-2.8.6.6-2.8 7.9-7.9L12.5 5l2-2z" fill="white"/><path d="M6 5l.8 2.1L9 8l-2.2.9L6 11l-.8-2.1L3 8l2.2-.9L6 5z" fill="white" opacity=".95"/></svg>
+            <div class="label">Enhance<br>Hero</div></div></div>
+
+          <!-- THU -->
+          <div class="day"><div class="dayInner"><div class="dayRow"><span>Thu</span><button class="vsBtn" type="button" data-day="Thu" aria-label="Open VS details for Thu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12v10H6z" fill="rgba(11,20,48,.25)"/><path d="M6 7h12v10H6z" fill="white" opacity=".9"/><path d="M8 9h8M8 12h7M8 15h6" stroke="rgba(11,20,48,.55)" stroke-width="2" stroke-linecap="round"/></svg>VS</button></div><div class="daySmall">Hero</div></div></div>
+          <div class="slot city"><div class="tile"><svg viewBox="0 0 24 24"><path d="M4 21h6V7H4v14zM12 21h8v-9h-8v9z" fill="white" opacity=".95"/><path d="M10 4h2v3h6l2 2v2h-2V10l-1-1h-7V4z" fill="white"/><path d="M16 10l-4 2v-2l4-2v2z" fill="white" opacity=".9"/></svg><div class="label">City<br>Construction</div></div></div>
+          <div class="slot sold"><div class="tile"><svg viewBox="0 0 24 24"><path d="M12 3c4 0 7 2.2 8 5.6-3 1.9-6 2.9-8 2.9S7 10.5 4 8.6C5 5.2 8 3 12 3z" fill="white"/><path d="M5 10.5V14c0 4.7 3.2 7 7 7s7-2.3 7-7v-3.5c-2.5 1.4-5.4 2.1-7 2.1s-4.5-.7-7-2.1z" fill="white"/></svg><div class="label">Soldier<br>Training</div></div></div>
+          <div class="slot tech"><div class="tile"><svg viewBox="0 0 24 24"><path d="M19.4 13a7.8 7.8 0 0 0 .1-2l2-1.2-2-3.4-2.3.7a7.9 7.9 0 0 0-1.7-1l-.3-2.4H10.8l-.3 2.4a7.9 7.9 0 0 0-1.7 1l-2.3-.7-2 3.4 2 1.2a7.8 7.8 0 0 0 .1 2l-2 1.2 2 3.4 2.3-.7c.5.4 1.1.7 1.7 1l.3 2.4h4.4l.3-2.4c.6-.3 1.2-.6 1.7-1l2.3.7 2-3.4-2-1.2z" fill="white"/><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5z" fill="rgba(0,0,0,.18)"/></svg><div class="label">Technology</div></div></div>
+          <div class="slot beast"><div class="tile"><svg viewBox="0 0 24 24"><circle cx="7.2" cy="9" r="2" fill="white"/><circle cx="12" cy="7.6" r="2.1" fill="white"/><circle cx="16.8" cy="9" r="2" fill="white"/><circle cx="19" cy="12.6" r="1.8" fill="white"/><path d="M12 12.2c-3.2 0-6.2 2-6.2 5 0 2 1.7 3.8 6.2 3.8s6.2-1.8 6.2-3.8c0-3-3-5-6.2-5z" fill="white"/></svg><div class="label">Mystic<br>Beast</div></div></div>
+          <div class="slot hero boost"><span class="vsTag">VS</span><div class="tile"><svg viewBox="0 0 24 24"><path d="M14.5 3l6.5 6.5-2 2-1.6-1.6-7.9 7.9-2.8.6.6-2.8 7.9-7.9L12.5 5l2-2z" fill="white"/><path d="M6 5l.8 2.1L9 8l-2.2.9L6 11l-.8-2.1L3 8l2.2-.9L6 5z" fill="white" opacity=".95"/></svg><div class="label">Enhance<br>Hero</div></div></div>
+          <div class="slot city"><div class="tile"><svg viewBox="0 0 24 24"><path d="M4 21h6V7H4v14zM12 21h8v-9h-8v9z" fill="white" opacity=".95"/><path d="M10 4h2v3h6l2 2v2h-2V10l-1-1h-7V4z" fill="white"/><path d="M16 10l-4 2v-2l4-2v2z" fill="white" opacity=".9"/></svg><div class="label">City<br>Construction</div></div></div>
+
+          <!-- FRI -->
+          <div class="day"><div class="dayInner"><div class="dayRow"><span>Fri</span><button class="vsBtn" type="button" data-day="Fri" aria-label="Open VS details for Fri"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12v10H6z" fill="rgba(11,20,48,.25)"/><path d="M6 7h12v10H6z" fill="white" opacity=".9"/><path d="M8 9h8M8 12h7M8 15h6" stroke="rgba(11,20,48,.55)" stroke-width="2" stroke-linecap="round"/></svg>VS</button></div><div class="daySmall">Soldier</div></div></div>
+          <div class="slot sold boost"><span class="vsTag">VS</span><div class="tile"><svg viewBox="0 0 24 24"><path d="M12 3c4 0 7 2.2 8 5.6-3 1.9-6 2.9-8 2.9S7 10.5 4 8.6C5 5.2 8 3 12 3z" fill="white"/><path d="M5 10.5V14c0 4.7 3.2 7 7 7s7-2.3 7-7v-3.5c-2.5 1.4-5.4 2.1-7 2.1s-4.5-.7-7-2.1z" fill="white"/></svg><div class="label">Soldier<br>Training</div></div></div>
+          <div class="slot tech"><div class="tile"><svg viewBox="0 0 24 24"><path d="M19.4 13a7.8 7.8 0 0 0 .1-2l2-1.2-2-3.4-2.3.7a7.9 7.9 0 0 0-1.7-1l-.3-2.4H10.8l-.3 2.4a7.9 7.9 0 0 0-1.7 1l-2.3-.7-2 3.4 2 1.2a7.8 7.8 0 0 0 .1 2l-2 1.2 2 3.4 2.3-.7c.5.4 1.1.7 1.7 1l.3 2.4h4.4l.3-2.4c.6-.3 1.2-.6 1.7-1l2.3.7 2-3.4-2-1.2z" fill="white"/><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5z" fill="rgba(0,0,0,.18)"/></svg><div class="label">Technology</div></div></div>
+          <div class="slot beast"><div class="tile"><svg viewBox="0 0 24 24"><circle cx="7.2" cy="9" r="2" fill="white"/><circle cx="12" cy="7.6" r="2.1" fill="white"/><circle cx="16.8" cy="9" r="2" fill="white"/><circle cx="19" cy="12.6" r="1.8" fill="white"/><path d="M12 12.2c-3.2 0-6.2 2-6.2 5 0 2 1.7 3.8 6.2 3.8s6.2-1.8 6.2-3.8c0-3-3-5-6.2-5z" fill="white"/></svg><div class="label">Mystic<br>Beast</div></div></div>
+          <div class="slot hero"><div class="tile"><svg viewBox="0 0 24 24"><path d="M14.5 3l6.5 6.5-2 2-1.6-1.6-7.9 7.9-2.8.6.6-2.8 7.9-7.9L12.5 5l2-2z" fill="white"/><path d="M6 5l.8 2.1L9 8l-2.2.9L6 11l-.8-2.1L3 8l2.2-.9L6 5z" fill="white" opacity=".95"/></svg><div class="label">Enhance<br>Hero</div></div></div>
+          <div class="slot city"><div class="tile"><svg viewBox="0 0 24 24"><path d="M4 21h6V7H4v14zM12 21h8v-9h-8v9z" fill="white" opacity=".95"/><path d="M10 4h2v3h6l2 2v2h-2V10l-1-1h-7V4z" fill="white"/><path d="M16 10l-4 2v-2l4-2v2z" fill="white" opacity=".9"/></svg><div class="label">City<br>Construction</div></div></div>
+          <div class="slot sold boost"><span class="vsTag">VS</span><div class="tile"><svg viewBox="0 0 24 24"><path d="M12 3c4 0 7 2.2 8 5.6-3 1.9-6 2.9-8 2.9S7 10.5 4 8.6C5 5.2 8 3 12 3z" fill="white"/><path d="M5 10.5V14c0 4.7 3.2 7 7 7s7-2.3 7-7v-3.5c-2.5 1.4-5.4 2.1-7 2.1s-4.5-.7-7-2.1z" fill="white"/></svg><div class="label">Soldier<br>Training</div></div></div>
+
+          <!-- SAT -->
+          <div class="day"><div class="dayInner"><div class="dayRow"><span>Sat</span><button class="vsBtn" type="button" data-day="Sat" aria-label="Open VS details for Sat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 7h12v10H6z" fill="rgba(11,20,48,.25)"/><path d="M6 7h12v10H6z" fill="white" opacity=".9"/><path d="M8 9h8M8 12h7M8 15h6" stroke="rgba(11,20,48,.55)" stroke-width="2" stroke-linecap="round"/></svg>VS</button></div><div class="daySmall">Soldier + Construction</div></div></div>
+          <div class="slot tech"><div class="tile"><svg viewBox="0 0 24 24"><path d="M19.4 13a7.8 7.8 0 0 0 .1-2l2-1.2-2-3.4-2.3.7a7.9 7.9 0 0 0-1.7-1l-.3-2.4H10.8l-.3 2.4a7.9 7.9 0 0 0-1.7 1l-2.3-.7-2 3.4 2 1.2a7.8 7.8 0 0 0 .1 2l-2 1.2 2 3.4 2.3-.7c.5.4 1.1.7 1.7 1l.3 2.4h4.4l.3-2.4c.6-.3 1.2-.6 1.7-1l2.3.7 2-3.4-2-1.2z" fill="white"/><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5z" fill="rgba(0,0,0,.18)"/></svg><div class="label">Technology</div></div></div>
+          <div class="slot beast"><div class="tile"><svg viewBox="0 0 24 24"><circle cx="7.2" cy="9" r="2" fill="white"/><circle cx="12" cy="7.6" r="2.1" fill="white"/><circle cx="16.8" cy="9" r="2" fill="white"/><circle cx="19" cy="12.6" r="1.8" fill="white"/><path d="M12 12.2c-3.2 0-6.2 2-6.2 5 0 2 1.7 3.8 6.2 3.8s6.2-1.8 6.2-3.8c0-3-3-5-6.2-5z" fill="white"/></svg><div class="label">Mystic<br>Beast</div></div></div>
+          <div class="slot hero"><div class="tile"><svg viewBox="0 0 24 24"><path d="M14.5 3l6.5 6.5-2 2-1.6-1.6-7.9 7.9-2.8.6.6-2.8 7.9-7.9L12.5 5l2-2z" fill="white"/><path d="M6 5l.8 2.1L9 8l-2.2.9L6 11l-.8-2.1L3 8l2.2-.9L6 5z" fill="white" opacity=".95"/></svg><div class="label">Enhance<br>Hero</div></div></div>
+          <div class="slot city boost"><span class="vsTag">VS</span><div class="tile"><svg viewBox="0 0 24 24"><path d="M4 21h6V7H4v14zM12 21h8v-9h-8v9z" fill="white" opacity=".95"/><path d="M10 4h2v3h6l2 2v2h-2V10l-1-1h-7V4z" fill="white"/><path d="M16 10l-4 2v-2l4-2v2z" fill="white" opacity=".9"/></svg><div class="label">City<br>Construction</div></div></div>
+          <div class="slot sold boost"><span class="vsTag">VS</span><div class="tile"><svg viewBox="0 0 24 24"><path d="M12 3c4 0 7 2.2 8 5.6-3 1.9-6 2.9-8 2.9S7 10.5 4 8.6C5 5.2 8 3 12 3z" fill="white"/><path d="M5 10.5V14c0 4.7 3.2 7 7 7s7-2.3 7-7v-3.5c-2.5 1.4-5.4 2.1-7 2.1s-4.5-.7-7-2.1z" fill="white"/></svg><div class="label">Soldier<br>Training</div></div></div>
+          <div class="slot tech"><div class="tile"><svg viewBox="0 0 24 24"><path d="M19.4 13a7.8 7.8 0 0 0 .1-2l2-1.2-2-3.4-2.3.7a7.9 7.9 0 0 0-1.7-1l-.3-2.4H10.8l-.3 2.4a7.9 7.9 0 0 0-1.7 1l-2.3-.7-2 3.4 2 1.2a7.8 7.8 0 0 0 .1 2l-2 1.2 2 3.4 2.3-.7c.5.4 1.1.7 1.7 1l.3 2.4h4.4l.3-2.4c.6-.3 1.2-.6 1.7-1l2.3.7 2-3.4-2-1.2z" fill="white"/><path d="M12 15.5A3.5 3.5 0 1 0 12 8a3.5 3.5 0 0 0 0 7.5z" fill="rgba(0,0,0,.18)"/></svg><div class="label">Technology</div></div></div>
+
+          <!-- SUN -->
+          
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="vsModal" role="dialog" aria-modal="true" aria-labelledby="vsModalTitle">
+  <div class="modalCard">
+    <div class="modalTop">
+      <div class="modalTitle" id="vsModalTitle">VS • Details</div>
+      <button class="closeBtn" id="vsClose" type="button">Close</button>
+    </div>
+    <div class="modalBody" id="vsModalBody"></div>
+  </div>
+</div>
+
+
+<script>
+  const VS = {
+  'Sun': { focus: [], bullets: ['Rest day (no VS focus).'] },
+  'Mon': { focus: ['hero','beast'], bullets: ['Complete Intelligence Quests for massive points','Level up your heroes','Level up your Mystic Beasts','Use as much stamina as possible','Save some low-level soldiers for the Friday event'] },
+  'Tue': { focus: ['city'], bullets: ['Ensure all wagons are dispatched at S+ level','Refresh Tavern quests until gold quests are available','Use all Survivor Recruitment Vouchers','Use speed-ups to accelerate building upgrades','Save some low-level soldiers for the Friday event'] },
+  'Wed': { focus: ['tech'], bullets: ['Complete Intelligence Quests for massive points','Use speed-ups to accelerate technology research','Open more Mystic Beast chests on Wednesdays','Save some low-level soldiers for the Friday event'] },
+  'Thu': { focus: ['hero'], bullets: ['Use all Hero Recruitment Vouchers','Level up your heroes','Upgrade your heroes’ skills','Star up your heroes','Save Intelligence Quests for the Friday event','Save some low-level soldiers for the Friday event'] },
+  'Fri': { focus: ['sold'], bullets: ['Complete Intelligence Quests for massive points','Train soldiers (use speed-ups to accelerate low-level training)','Leave chests from upgraded buildings unopened for the next Tuesday'] },
+  'Sat': { focus: ['sold','city'], bullets: ['Lords not participating in attacks should activate shields','Lords eager for battle can attack, but if the CP difference is significant, target smaller Unions first','Assist in defending allies to repel enemies and earn points','Ensure all wagons are dispatched at S+ level','Use speed-ups to accelerate soldier training','Use speed-ups to accelerate building upgrades','Use speed-ups to accelerate injured soldier treatment','Each Duel chest contains Energy Crystals (used for upgrading advanced technology). Open as many chests as possible each day for better rewards','Upgrade Union Duel technology to unlock more chests','Completing quests also grants Duel points'] }
+};
+
+  const modal = document.getElementById('vsModal');
+  const modalBody = document.getElementById('vsModalBody');
+  const modalTitle = document.getElementById('vsModalTitle');
+  const closeBtn = document.getElementById('vsClose');
+
+  function prettyFocus(focusArr) {
+    const map = {
+      hero: 'Enhance Hero',
+      city: 'City Construction',
+      sold: 'Soldier Training',
+      tech: 'Technology',
+      beast: 'Mystic Beast'
+    };
+    return (focusArr || []).map(x => map[x] || x);
+  }
+
+  function openVS(day) {
+    const data = VS[day] || {focus:[], bullets:['No VS details available.']};
+    modalTitle.textContent = 'VS • ' + day;
+
+    const focusLabels = prettyFocus(data.focus);
+    const pills = focusLabels.length
+      ? '<div class="vsPills">' + focusLabels.map(x => '<span class="pill">' + x + '</span>').join('') + '</div>'
+      : '<div class="vsPills"><span class="pill">No overlap focus set</span></div>';
+
+    const list = '<ul class="list">' + (data.bullets || []).map(b => '<li>' + b + '</li>').join('') + '</ul>';
+
+    modalBody.innerHTML = pills + list;
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    closeBtn.focus();
+  }
+
+  function closeVS() {
+    modal.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('.vsBtn').forEach(btn => {
+    btn.addEventListener('click', () => openVS(btn.dataset.day));
+  });
+
+  closeBtn.addEventListener('click', closeVS);
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeVS();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('open')) closeVS();
+  });
+</script>
+
+</body>
+</html>
