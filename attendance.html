@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>X-Clash Attendance Manager</title>
 <link rel="stylesheet" href="attendance.css">
+<link rel="stylesheet" href="attendance-layout-fix.css">
 </head>
 <body>
   <div class="wrap">
@@ -13,7 +14,7 @@
         <div>
           <div class="eyebrow">⚔️ X-Clash · Ruins Battlefield</div>
           <h1>Attendance Command Center</h1>
-          <div class="subtitle">Confirmed players now float to the top of each section. Main squad stays first, substitutes sit underneath in their own section, and not selected players stay at the bottom of the flow.</div>
+          <div class="subtitle">Confirmed players float to the top of each section. Main squad stays first, substitutes sit underneath, and not selected players stay at the bottom.</div>
         </div>
         <div class="battle-box">
           <div class="label">Battle window</div>
@@ -23,42 +24,20 @@
       </div>
 
       <div class="stats">
-        <div class="stat">
-          <div class="big blue" id="mainCount">0/20</div>
-          <div class="label">Main squad assigned</div>
-          <div class="progress"><span id="mainProgress" style="width:0%"></span></div>
-        </div>
-        <div class="stat">
-          <div class="big purple" id="subCount">0/10</div>
-          <div class="label">Subs assigned</div>
-          <div class="progress sub"><span id="subProgress" style="width:0%"></span></div>
-        </div>
-        <div class="stat">
-          <div class="big green" id="confirmedCount">0</div>
-          <div class="label">Confirmed yes</div>
-        </div>
-        <div class="stat">
-          <div class="big amber" id="waitingCount">0</div>
-          <div class="label">Awaiting reply</div>
-        </div>
-        <div class="stat">
-          <div class="big red" id="cannotCount">0</div>
-          <div class="label">Cannot attend</div>
-        </div>
-        <div class="stat">
-          <div class="big blue" id="readyMainCount">0</div>
-          <div class="label">Confirmed mains</div>
-        </div>
+        <div class="stat"><div class="big blue" id="mainCount">0/20</div><div class="label">Main squad assigned</div><div class="progress"><span id="mainProgress" style="width:0%"></span></div></div>
+        <div class="stat"><div class="big purple" id="subCount">0/10</div><div class="label">Subs assigned</div><div class="progress sub"><span id="subProgress" style="width:0%"></span></div></div>
+        <div class="stat"><div class="big green" id="confirmedCount">0</div><div class="label">Confirmed yes</div></div>
+        <div class="stat"><div class="big amber" id="waitingCount">0</div><div class="label">Awaiting reply</div></div>
+        <div class="stat"><div class="big red" id="cannotCount">0</div><div class="label">Cannot attend</div></div>
+        <div class="stat"><div class="big blue" id="readyMainCount">0</div><div class="label">Confirmed mains</div></div>
       </div>
 
-      <div class="notice">
-        <strong>Roster loaded:</strong> 19 mains, 10 substitutes and 4 not selected.
-        When Main or Sub is already full, tapping the button now opens a <strong>direct swap picker</strong> instead of blocking the move.
-      </div>
+      <div class="notice"><strong>Roster loaded:</strong> 19 mains, 10 substitutes and 4 not selected. When Main or Sub is already full, tapping the button opens a <strong>direct swap picker</strong>.</div>
 
       <div class="toolbar">
         <div class="search"><input id="search" type="search" placeholder="Search player name"></div>
         <button class="primary" id="addBtn" type="button">+ Add player</button>
+        <button class="readiness-btn" id="readinessBtn" type="button">☰ Battle readiness</button>
         <button class="success" id="fillBtn" type="button">Fill empty main slots</button>
         <button class="warn" id="confirmTopBtn" type="button">Auto move confirmed subs if mains are short</button>
         <button class="secondary" id="copyBtn" type="button">Copy lineup</button>
@@ -74,127 +53,82 @@
     <section class="layout">
       <div class="board">
         <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h2>Main Squad</h2>
-              <div class="label">Confirmed first, then waiting, then unavailable</div>
-            </div>
-            <div class="meta" id="mainMeta"></div>
-          </div>
+          <div class="panel-head"><div><h2>Main Squad</h2><div class="label">Confirmed first, then waiting, then unavailable</div></div><div class="meta" id="mainMeta"></div></div>
           <div class="panel-body" id="mainList"></div>
         </section>
-
         <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h2>Substitutes</h2>
-              <div class="label">Confirmed standby players float to the top</div>
-            </div>
-            <div class="meta" id="subMeta"></div>
-          </div>
+          <div class="panel-head"><div><h2>Substitutes</h2><div class="label">Confirmed standby players float to the top</div></div><div class="meta" id="subMeta"></div></div>
           <div class="panel-body" id="subList"></div>
         </section>
-
         <section class="panel">
-          <div class="panel-head">
-            <div>
-              <h2>Not Selected</h2>
-              <div class="label">Bench players stay last</div>
-            </div>
-            <div class="meta" id="benchMeta"></div>
-          </div>
+          <div class="panel-head"><div><h2>Not Selected</h2><div class="label">Bench players stay last</div></div><div class="meta" id="benchMeta"></div></div>
           <div class="panel-body" id="benchList"></div>
         </section>
       </div>
 
-      <aside class="sidebar">
+      <aside class="sidebar secondary-panels">
         <section class="panel">
-          <div class="panel-head">
-            <h2>Battle Readiness</h2>
-            <div class="meta">Quick view</div>
-          </div>
-          <div class="panel-body">
-            <div class="mini-list" id="readinessList"></div>
-            <div class="footnote">Confirmed mains are your strongest signal for who should stay in the starting team.</div>
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-head">
-            <h2>Suggested Actions</h2>
-            <div class="meta">One tap actions</div>
-          </div>
+          <div class="panel-head"><h2>Suggested Actions</h2><div class="meta">One tap actions</div></div>
           <div class="panel-body" id="suggestions"></div>
         </section>
-
         <section class="panel">
-          <div class="panel-head">
-            <h2>Confirmed Standby Pool</h2>
-            <div class="meta">Best non-main options</div>
-          </div>
+          <div class="panel-head"><h2>Confirmed Standby Pool</h2><div class="meta">Best non-main options</div></div>
           <div class="panel-body" id="standbyPool"></div>
         </section>
       </aside>
     </section>
   </div>
 
+  <dialog id="readinessDialog" class="readiness-dialog">
+    <div class="modal">
+      <div class="dialog-head">
+        <div><div class="eyebrow">⚔️ X-Clash</div><h2>Battle Readiness</h2></div>
+        <button type="button" id="closeReadiness" class="dialog-close" aria-label="Close battle readiness">✕</button>
+      </div>
+      <div class="mini-list" id="readinessList"></div>
+      <div class="footnote">Confirmed mains are your strongest signal for who should stay in the starting team.</div>
+    </div>
+  </dialog>
+
   <dialog id="swapDialog">
     <form class="modal" id="swapForm">
       <h2 id="swapTitle">Choose player to move</h2>
-      <div class="field full">
-        <label for="swapSelect" id="swapLabel">Select player</label>
-        <select id="swapSelect"></select>
-      </div>
+      <div class="field full"><label for="swapSelect" id="swapLabel">Select player</label><select id="swapSelect"></select></div>
       <div class="footnote" id="swapHelp"></div>
-      <div class="modal-actions">
-        <button type="button" id="cancelSwap">Cancel</button>
-        <button type="submit" class="primary">Confirm swap</button>
-      </div>
+      <div class="modal-actions"><button type="button" id="cancelSwap">Cancel</button><button type="submit" class="primary">Confirm swap</button></div>
     </form>
   </dialog>
 
   <dialog id="playerDialog">
     <form class="modal" id="playerForm">
-      <h2 id="dialogTitle">Add player</h2>
-      <input type="hidden" id="editIndex">
+      <h2 id="dialogTitle">Add player</h2><input type="hidden" id="editIndex">
       <div class="form-grid">
-        <div class="field full">
-          <label for="playerName">Player name</label>
-          <input id="playerName" maxlength="60" required>
-        </div>
-        <div class="field">
-          <label for="playerPower">Power</label>
-          <input id="playerPower" type="number" min="0" step="1" inputmode="numeric" placeholder="Optional">
-        </div>
-        <div class="field">
-          <label for="playerRank">Rank / group</label>
-          <input id="playerRank" maxlength="12" placeholder="e.g. R1, R4">
-        </div>
-        <div class="field">
-          <label for="playerAssignment">Assignment</label>
-          <select id="playerAssignment">
-            <option value="main">Main squad</option>
-            <option value="sub">Substitute</option>
-            <option value="unselected">Not selected</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="playerStatus">Attendance</label>
-          <select id="playerStatus">
-            <option value="waiting">Awaiting reply</option>
-            <option value="confirmed">Definitely attending</option>
-            <option value="no">Cannot attend</option>
-          </select>
-        </div>
+        <div class="field full"><label for="playerName">Player name</label><input id="playerName" maxlength="60" required></div>
+        <div class="field"><label for="playerPower">Power</label><input id="playerPower" type="number" min="0" step="1" inputmode="numeric" placeholder="Optional"></div>
+        <div class="field"><label for="playerRank">Rank / group</label><input id="playerRank" maxlength="12" placeholder="e.g. R1, R4"></div>
+        <div class="field"><label for="playerAssignment">Assignment</label><select id="playerAssignment"><option value="main">Main squad</option><option value="sub">Substitute</option><option value="unselected">Not selected</option></select></div>
+        <div class="field"><label for="playerStatus">Attendance</label><select id="playerStatus"><option value="waiting">Awaiting reply</option><option value="confirmed">Definitely attending</option><option value="no">Cannot attend</option></select></div>
       </div>
-      <div class="modal-actions">
-        <button type="button" id="cancelDialog">Cancel</button>
-        <button type="submit" class="primary">Save player</button>
-      </div>
+      <div class="modal-actions"><button type="button" id="cancelDialog">Cancel</button><button type="submit" class="primary">Save player</button></div>
     </form>
   </dialog>
 
 <script src="attendance-a.js"></script>
 <script src="attendance-b.js"></script>
+<script>
+(() => {
+  const openBtn = document.getElementById('readinessBtn');
+  const closeBtn = document.getElementById('closeReadiness');
+  const dialog = document.getElementById('readinessDialog');
+  if (openBtn && closeBtn && dialog) {
+    openBtn.addEventListener('click', () => dialog.showModal());
+    closeBtn.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('click', (e) => {
+      const r = dialog.getBoundingClientRect();
+      if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close();
+    });
+  }
+})();
+</script>
 </body>
 </html>
